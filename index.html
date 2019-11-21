@@ -9,6 +9,7 @@
         <link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
         <script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/showdown@1.9.1/dist/showdown.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/js-yaml@3.13.1/dist/js-yaml.min.js"></script>
     </head>
     <body>
         <div class="Header">
@@ -48,6 +49,8 @@
             const index = '__INDEX.md';
             const notFound = '__404.md';
 
+            const metadataRegex = /---\n([\s\S]*)\n---/;
+
             const markdownConverter = new showdown.Converter();
 
             $(handleNewHash); // initial post load
@@ -68,9 +71,22 @@
                 $('#content').fadeOut(250);
                 console.log('loading ' + file);
                 
+                if (file === 'README') return loadPost('__404'); // ban loading of the readme file
+
                 $.get(url.replace('%file%', file + '.md'))
                     .done(data => {
-                        $('#content').html(markdownConverter.makeHtml(data));
+                        if (!file.startsWith('__')) { // not system file?                        
+                            // parse header
+                            const yamlData = data.match(metadataRegex)[1]; // gets the yaml data from the header
+                            const meta = jsyaml.safeLoad(yamlData);
+
+                            $('title').text(meta.title + ' | Anything Goes');
+                            const markdown = `# ${meta.title}\n*Written by [${meta.author}](https://github.com/${meta.author})*\n\n${data.replace(metadataRegex, '')}`;
+                            $('#content').html(markdownConverter.makeHtml(markdown));
+                        } else {
+                            $('#content').html(markdownConverter.makeHtml(data));
+                        }
+                        
                         $('#content').fadeIn(250);
                     })
                     .fail(() => {
