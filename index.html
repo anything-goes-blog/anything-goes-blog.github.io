@@ -20,7 +20,7 @@
             </div>
             <div class="Header-item Header-item--full"></div>
             <div class="Header-item">
-                <a href="https://github.com/anything-goes-blog/posts" class="Header-link">
+                <a href="https://github.com/anything-goes-blog/posts#readme" class="Header-link">
                     <svg height="16" class="octicon octicon-mark-github mr-1" viewBox="0 0 16 16" version="1.1" width="16"
                         aria-hidden="true">
                         <path fill-rule="evenodd"
@@ -84,7 +84,13 @@
                             const markdown = `# ${meta.title}\n*Written by [${meta.author}](https://github.com/${meta.author})*\n\n${data.replace(metadataRegex, '')}`;
                             $('#content').html(markdownConverter.makeHtml(markdown));
                         } else {
-                            $('#content').html(markdownConverter.makeHtml(data));
+                            if (file === '__INDEX') {
+                                const newData = data.replace('%latestPosts%', '*Not yet implemented.*');
+
+                                $('#content').html(markdownConverter.makeHtml(newData));
+                            } else {
+                                $('#content').html(markdownConverter.makeHtml(data));
+                            }
                         }
                         
                         $('#content').fadeIn(250);
